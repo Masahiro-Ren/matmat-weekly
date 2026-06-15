@@ -112,8 +112,10 @@ using std::printf;
     };
 
     vector<pair<std::string, MatmulFn>> impls{
-        {"ij_simd256", matmat_simd256},
-        {"ij_simd512", matmat_simd512}
+        {"ij_simd256_4x4" , matmat_simd256_4x4},
+        {"ij_simd256_4x8" , matmat_simd256_4x8},
+        {"ij_simd512_8x8" , matmat_simd512_8x8},
+        {"ij_simd512_8x16", matmat_simd512_8x16}
     };
 
     const int warmup = 3;
@@ -123,8 +125,9 @@ using std::printf;
     for(const auto& [M, N, K] : problem_sizes)
     {
         // The SIMD kernels have no remainder handling: M/N must be exact
-        // multiples of the tile dims (AVX2: 4x4, AVX512: 8x16). Skip otherwise.
-        if(M % MR_512 || N % NR_512 || M % MR_256 || N % NR_256)
+        // multiples of every kernel's tile. The largest tile (8x16) is the
+        // binding constraint -- M%8==0, N%16==0 also satisfy 4x4/4x8/8x8.
+        if(M % MR512_8x16 || N % NR512_8x16)
         {
             printf("\n [skip] M=%zu, N=%zu not divisible by kernel tiles "
                    "(need M%%8==0, N%%16==0)\n", M, N);
@@ -141,13 +144,13 @@ using std::printf;
 
         printf("\n ========= M=%zu, N=%zu, K=%zu, (%.1f MFLOP) =========\n",
                M, N, K, 2.0 * M * N * K / 1e6);
-        //      Impl          best(ms)    avg(ms)   GFLOP/s   %ofBLAS   status     maxdiff
-        printf("  %-12s  %10s  %10s  %9s  %8s  %7s  %11s\n",
+        //      Impl              best(ms)    avg(ms)   GFLOP/s   %ofBLAS   status     maxdiff
+        printf("  %-16s  %10s  %10s  %9s  %8s  %7s  %11s\n",
                "Impl", "best(ms)", "avg(ms)", "GFLOP/s", "%ofBLAS", "status", "maxdiff");
 
 #ifdef USE_BLAS
         auto blas_res = blas_benchmark(A.data(), B.data(), Ref.data(), M, N, K, warmup, rounds);
-        printf("  %-12s  %10.4f  %10.4f  %9.2f  %7.1f%%  %7s  %11s\n",
+        printf("  %-16s  %10.4f  %10.4f  %9.2f  %7.1f%%  %7s  %11s\n",
                "BLAS", blas_res.t_best, blas_res.t_avg, blas_res.gflops, 100.0, "N/A", "N/A");
 #else
         matmat_ikj(A.data(), B.data(), Ref.data(), M, N, K);
@@ -161,10 +164,10 @@ using std::printf;
             const bool ok = diff <= tol * std::max(1.0, std::abs(res.chk));
 #ifdef USE_BLAS
             const double pct = blas_res.gflops > 0 ? res.gflops / blas_res.gflops * 100.0 : 0.0;
-            printf("  %-12s  %10.4f  %10.4f  %9.2f  %7.1f%%  %7s  %11.2e\n",
+            printf("  %-16s  %10.4f  %10.4f  %9.2f  %7.1f%%  %7s  %11.2e\n",
                    name.c_str(), res.t_best, res.t_avg, res.gflops, pct, ok ? "OK" : "WRONG", diff);
 #else
-            printf("  %-12s  %10.4f  %10.4f  %9.2f  %8s  %7s  %11.2e\n",
+            printf("  %-16s  %10.4f  %10.4f  %9.2f  %8s  %7s  %11.2e\n",
                    name.c_str(), res.t_best, res.t_avg, res.gflops, "N/A", ok ? "OK" : "WRONG", diff);
 #endif
         }
