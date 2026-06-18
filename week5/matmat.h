@@ -35,7 +35,9 @@ void matmat_blocked_kji(const double* A, const double* B, double* C,
                         size_t M, size_t N, size_t K);
 
 void inner_simd512_8x16(const double* A, const double* B, double* C,
-                         size_t M, size_t N, size_t K);
+                        size_t ii, size_t jj, size_t kk,
+                        size_t bm, size_t bn, size_t bk,
+                        size_t M, size_t N, size_t K);
 
 // ------------------- For reference -----------------------
 void matmat_ikj(const double* A, const double* B, double* C, size_t M, size_t N, size_t K);
