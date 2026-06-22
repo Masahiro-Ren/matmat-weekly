@@ -54,7 +54,7 @@ BenchResult benchmark(const MatmulFn& fn,
     const double flop = 2.0 * double(M) * double(N) * double(K);
     res.t_best = t_best;
     res.t_avg = t_total / rounds;
-    res.gflops = flop / t_best / 1e9;
+    res.gflops = flop / res.t_avg / 1e9;
     res.chk = checksum(C, M * N);
 
     return res;
@@ -92,7 +92,7 @@ BenchResult blas_benchmark(const double* A, const double* B, double* C,
     const double flop = 2.0 * double(M) * double(N) * double(K);
     res.t_best = t_best;
     res.t_avg = t_total / rounds;
-    res.gflops = flop / t_best / 1e9;
+    res.gflops = flop / res.t_avg / 1e9;
     res.chk = checksum(C, M * N);
 
     return res;
@@ -129,8 +129,8 @@ using std::printf;
         {"kji_ij_8x16", matmat_blocked_kji}
     };
 
-    const int warmup = 3;
-    const int rounds = 10;
+    const int warmup = 10;
+    const int rounds = 20;
     const double tol = 1e-9;
 
     for(const auto& [M, N, K] : problem_sizes)

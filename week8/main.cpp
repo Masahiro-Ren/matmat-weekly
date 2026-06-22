@@ -17,21 +17,21 @@ using std::printf;
 
 
     vector<tuple<size_t, size_t, size_t>> problem_sizes{
-        {256, 256, 256},
-        {512, 512, 512},
         {1024, 1024, 1024},
+        {2048, 2048, 2048},
+        {4096, 4096, 4096}
     };
 
     vector<pair<std::string, MatmulFn>> impls{
         {"ikj_ij_8x16", matmat_blocked_ikj},
     };
 
-    const int warmup = 3;
-    const int rounds = 10;
+    const int warmup = 10;
+    const int rounds = 20;
     const double tol = 1e-9;
 
     // ------------------ AUTO-TUNING Stage --------------------------
-    const size_t Mt = 1024, Nt = 1024, Kt = 1024;   // tune at a clean-to-measure size
+    const size_t Mt = 2048, Nt = 2048, Kt = 2048;   // tune at a clean-to-measure size
     vector<double> A(Mt*Kt), B(Kt*Nt), C(Mt*Nt, 0.0);
     fill_random(A.data(), Mt*Kt, -1.0, 1.0);
     fill_random(B.data(), Kt*Nt, -1.0, 1.0);
