@@ -71,9 +71,9 @@ using std::printf;
 
         printf("\n ========= M=%zu, N=%zu, K=%zu, (%.1f MFLOP) =========\n",
                M, N, K, 2.0 * M * N * K / 1e6);
-        //      Impl          block        best(ms)    avg(ms)   GFLOP/s   %ofBLAS   status     maxdiff
+        //      Impl          block        best(s)    avg(s)   GFLOP/s   %ofBLAS   status     maxdiff
         printf("  %-12s  %-11s  %10s  %10s  %9s  %8s  %7s  %11s\n",
-               "Impl", "block", "best(ms)", "avg(ms)", "GFLOP/s", "%ofBLAS", "status", "maxdiff");
+               "Impl", "block", "best(s)", "avg(s)", "GFLOP/s", "%ofBLAS", "status", "maxdiff");
 
 #ifdef USE_BLAS
         auto blas_res = blas_benchmark(A.data(), B.data(), Ref.data(), M, N, K, warmup, rounds);

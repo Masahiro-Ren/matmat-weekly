@@ -144,13 +144,13 @@ using std::printf;
 
         printf("\n ========= M=%zu, N=%zu, K=%zu, (%.1f MFLOP) =========\n",
                M, N, K, 2.0 * M * N * K / 1e6);
-        //      Impl              best(ms)    avg(ms)   GFLOP/s   %ofBLAS   status     maxdiff
+        //      Impl              best(s)    avg(s)   GFLOP/s   %ofBLAS   status     maxdiff
         printf("  %-16s  %10s  %10s  %9s  %8s  %7s  %11s\n",
-               "Impl", "best(ms)", "avg(ms)", "GFLOP/s", "%ofBLAS", "status", "maxdiff");
+               "Impl", "best(s)", "avg(s)", "GFLOP/s", "%ofBLAS", "status", "maxdiff");
 
 #ifdef USE_BLAS
         auto blas_res = blas_benchmark(A.data(), B.data(), Ref.data(), M, N, K, warmup, rounds);
-        printf("  %-16s  %10.4f  %10.4f  %9.2f  %7.1f%%  %7s  %11s\n",
+        printf("  %-16s  %10.3e  %10.3e  %9.2f  %7.1f%%  %7s  %11s\n",
                "BLAS", blas_res.t_best, blas_res.t_avg, blas_res.gflops, 100.0, "N/A", "N/A");
 #else
         matmat_ikj(A.data(), B.data(), Ref.data(), M, N, K);
@@ -164,10 +164,10 @@ using std::printf;
             const bool ok = diff <= tol * std::max(1.0, std::abs(res.chk));
 #ifdef USE_BLAS
             const double pct = blas_res.gflops > 0 ? res.gflops / blas_res.gflops * 100.0 : 0.0;
-            printf("  %-16s  %10.4f  %10.4f  %9.2f  %7.1f%%  %7s  %11.2e\n",
+            printf("  %-16s  %10.3e  %10.3e  %9.2f  %7.1f%%  %7s  %11.2e\n",
                    name.c_str(), res.t_best, res.t_avg, res.gflops, pct, ok ? "OK" : "WRONG", diff);
 #else
-            printf("  %-16s  %10.4f  %10.4f  %9.2f  %8s  %7s  %11.2e\n",
+            printf("  %-16s  %10.3e  %10.3e  %9.2f  %8s  %7s  %11.2e\n",
                    name.c_str(), res.t_best, res.t_avg, res.gflops, "N/A", ok ? "OK" : "WRONG", diff);
 #endif
         }
