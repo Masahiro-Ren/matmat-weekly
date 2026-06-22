@@ -36,7 +36,7 @@ BenchResult benchmark(const MatmulFn& fn,
     const double flop = 2.0 * double(M) * double(N) * double(K);
     res.t_best = t_best;
     res.t_avg = t_total / rounds;
-    res.gflops = flop / t_best / 1e9;
+    res.gflops = flop / res.t_avg / 1e9;
     res.chk = checksum(C, M * N);
 
     return res;
@@ -74,7 +74,7 @@ BenchResult blas_benchmark(const double* A, const double* B, double* C,
     const double flop = 2.0 * double(M) * double(N) * double(K);
     res.t_best = t_best;
     res.t_avg = t_total / rounds;
-    res.gflops = flop / t_best / 1e9;
+    res.gflops = flop / res.t_avg / 1e9;
     res.chk = checksum(C, M * N);
 
     return res;
