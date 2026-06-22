@@ -96,8 +96,12 @@ void matmat_blocked_ikj(const double* A, const double* B, double* C,
 {
     #pragma omp parallel
     {
-        double* Apack = static_cast<double*>(std::aligned_alloc(64, BM * BK * sizeof(double)));
-        double* Bpack = static_cast<double*>(std::aligned_alloc(64, BK * BN * sizeof(double)));
+        // double* Apack = static_cast<double*>(std::aligned_alloc(64, BM * BK * sizeof(double)));
+        // double* Bpack = static_cast<double*>(std::aligned_alloc(64, BK * BN * sizeof(double)));
+        static thread_local double* Apack = nullptr;  static thread_local size_t Acap = 0;
+        static thread_local double* Bpack = nullptr;  static thread_local size_t Bcap = 0;
+        if (BM*BK > Acap) { std::free(Apack); Apack = (double*)std::aligned_alloc(64, BM*BK*sizeof(double)); Acap = BM*BK; }
+        if (BK*BN > Bcap) { std::free(Bpack); Bpack = (double*)std::aligned_alloc(64, BK*BN*sizeof(double)); Bcap = BK*BN; }
 
         #pragma omp for schedule(static)
         for(size_t ii = 0; ii < M; ii += BM)
@@ -118,8 +122,8 @@ void matmat_blocked_ikj(const double* A, const double* B, double* C,
             }
         }
 
-        std::free(Apack);
-        std::free(Bpack);
+        // std::free(Apack);
+        // std::free(Bpack);
     }
 }
 
